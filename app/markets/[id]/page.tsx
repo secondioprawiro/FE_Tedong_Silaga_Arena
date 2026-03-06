@@ -8,6 +8,8 @@ import {
   ShieldCheck, AlertCircle, CheckCircle2, MapPin, Flame, Lock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAccount, useBalance } from "wagmi";
+import { formatUnits } from "viem";
 
 // ── Mock Data ──────────────────────────────────────────────────────────────────
 const MATCHES: Record<string, {
@@ -55,13 +57,20 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const match = MATCHES[id] ?? DEFAULT_MATCH;
   const sc = STATUS_CONFIG[match.status];
 
+  const { address, isConnected } = useAccount();
+  const { data: balanceData } = useBalance({
+    address: address,
+  });
+
   const [selectedBuffalo, setSelectedBuffalo] = useState<"A" | "B" | null>(null);
   const [stake, setStake] = useState("");
   const [token, setToken] = useState<"WLD" | "USDC">("WLD");
-  const isVerified = true; // Demo
+
+  const isVerified = true; // Still demo for World ID
   const isOpen = match.status === "Open";
 
   const estimated = stake ? (Number(stake) * 1.84).toFixed(2) : "0.00";
+  const displayBalance = balanceData ? `${parseFloat(formatUnits(balanceData.value, balanceData.decimals)).toFixed(4)} ${balanceData.symbol}` : "0.00";
 
   return (
     <div style={{ minHeight: "100vh", background: "#0B0F1A", color: "#E2E8F0" }}>
@@ -492,7 +501,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
                         <label style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#475569" }}>Amount</label>
-                        <span style={{ fontSize: "11px", color: "#475569" }}>Bal: 1,240 {token}</span>
+                        <span style={{ fontSize: "11px", color: "#475569" }}>
+                          {isConnected ? `Bal: ${displayBalance}` : "Connect to see balance"}
+                        </span>
                       </div>
                       <div style={{ position: "relative" }}>
                         <input
@@ -565,21 +576,23 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
                     {/* CTA */}
                     <button
-                      disabled={!selectedBuffalo || !stake || !isVerified}
+                      disabled={!isConnected || !selectedBuffalo || !stake || !isVerified}
                       style={{
                         width: "100%", padding: "1.1rem",
                         borderRadius: "14px", border: "none",
-                        background: selectedBuffalo && stake && isVerified
+                        background: isConnected && selectedBuffalo && stake && isVerified
                           ? "linear-gradient(135deg, #4F6BFF, #6366F1)"
                           : "rgba(255,255,255,0.05)",
-                        color: selectedBuffalo && stake && isVerified ? "#fff" : "#334155",
-                        fontSize: "15px", fontWeight: 800, cursor: selectedBuffalo && stake && isVerified ? "pointer" : "not-allowed",
-                        boxShadow: selectedBuffalo && stake && isVerified ? "0 8px 24px rgba(79,107,255,0.3)" : "none",
+                        color: isConnected && selectedBuffalo && stake && isVerified ? "#fff" : "#334155",
+                        fontSize: "15px", fontWeight: 800, cursor: (isConnected && selectedBuffalo && stake && isVerified) ? "pointer" : "not-allowed",
+                        boxShadow: (isConnected && selectedBuffalo && stake && isVerified) ? "0 8px 24px rgba(79,107,255,0.3)" : "none",
                         transition: "all 0.25s",
                         letterSpacing: "-0.01em",
                       }}
                     >
-                      {!selectedBuffalo ? "Pilih Kerbau dahulu" : !stake ? "Enter amount" : "Konfirmasi Prediksi →"}
+                      {!isConnected ? "Connect Wallet to Predict" : 
+                       !selectedBuffalo ? "Pilih Kerbau dahulu" : 
+                       !stake ? "Enter amount" : "Konfirmasi Prediksi →"}
                     </button>
                   </>
                 )}

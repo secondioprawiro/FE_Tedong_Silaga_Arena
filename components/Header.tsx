@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Wallet, ShieldCheck, Menu, X, Flame } from "lucide-react";
+import { ShieldCheck, Menu, X, Flame } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import WalletButton from "@/components/WalletButton";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -94,24 +95,7 @@ const Header = () => {
           )}
 
           {/* Wallet Button */}
-          <button style={{
-            display: "flex", alignItems: "center", gap: "8px",
-            padding: "8px 18px",
-            background: "#6366F1",
-            color: "#fff",
-            border: "none",
-            borderRadius: "8px",
-            fontWeight: 700, fontSize: "14px",
-            cursor: "pointer",
-            boxShadow: "0 4px 12px rgba(99,102,241,0.2)",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={e => (e.currentTarget.style.background = "#818CF8")}
-          onMouseLeave={e => (e.currentTarget.style.background = "#6366F1")}
-          >
-            <Wallet size={16} />
-            <span className="hidden xs:block">Connect Wallet</span>
-          </button>
+          <WalletButton />
 
           {/* Mobile Menu Toggle */}
           <button
